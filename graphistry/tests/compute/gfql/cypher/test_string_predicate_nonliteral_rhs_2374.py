@@ -50,9 +50,8 @@ def _rows(engine, query):
     """Rows with nulls as None, or None when a Polars engine declines the query (parity-or-error)."""
     try:
         out = _graph(engine).gfql(query, engine=engine)._nodes
-    except NotImplementedError:
-        assert engine not in ("pandas", "cudf"), "pandas and cudf must answer"
-        return None
+    except NotImplementedError as exc:
+        assert False, "DECLINE|%s|%s|%s" % (engine, query[:120], str(exc)[:160])
     if hasattr(out, "to_pandas"):
         out = out.to_pandas()
     return [{k: (None if pd.isna(v) else v) for k, v in row.items()} for row in out.to_dict("records")]
