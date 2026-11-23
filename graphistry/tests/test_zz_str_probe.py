@@ -13,13 +13,13 @@ def test_cudf_slice_from_prefix_suffix():
     right = cudf.Series(["a", "z", "q", ".", "bc", "", "abc", None])
     outs = []
     try:
-        ll, lr = left.str.len(), right.str.len()
+        ll, lr = left.str.len().fillna(0), right.str.len().fillna(0)
         zeros = ll * 0
-        prefix = left.str.slice_from(starts=zeros, stops=lr.fillna(0))
+        prefix = left.str.slice_from(starts=zeros, stops=lr)
         pre = (prefix == right) & (lr <= ll)
         outs.append("PREFIX dtype=%s %s" % (pre.dtype, pre.to_pandas().tolist()))
         starts = (ll - lr).clip(lower=0)
-        suffix = left.str.slice_from(starts=starts.fillna(0), stops=ll.fillna(0))
+        suffix = left.str.slice_from(starts=starts, stops=ll)
         suf = (suffix == right) & (lr <= ll)
         outs.append("SUFFIX dtype=%s %s" % (suf.dtype, suf.to_pandas().tolist()))
     except Exception as exc:  # noqa
